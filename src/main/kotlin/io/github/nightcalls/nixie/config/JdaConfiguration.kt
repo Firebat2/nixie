@@ -1,6 +1,6 @@
 package io.github.nightcalls.nixie.config
 
-import io.github.nightcalls.nixie.utils.getLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -11,24 +11,24 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import javax.security.auth.login.LoginException
 
+private val logger = KotlinLogging.logger {}
+
 @Configuration
 class JdaConfiguration(
     private val environment: Environment
 ) {
-    private val logger = getLogger()
-
     @Bean
     fun jda(): JDA {
         val token = environment.getRequiredProperty("discord.token")
         val builder = createBuilder(token)
         try {
-            logger.info("Производится попытка залогиниться в Discord...")
+            logger.info { "Производится попытка залогиниться в Discord..." }
             val jda = builder.build()
             jda.awaitReady()
-            logger.info("Успешный логин в Discord")
+            logger.info { "Успешный логин в Discord" }
             return jda
         } catch (e: LoginException) {
-            logger.error("Не удалось залогиниться в Discord! $e")
+            logger.error { "Не удалось залогиниться в Discord! $e" }
             throw e
         }
     }
