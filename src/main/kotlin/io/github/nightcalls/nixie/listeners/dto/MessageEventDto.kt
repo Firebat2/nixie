@@ -5,7 +5,9 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 
 data class MessageEventDto(
-    val guildId: Long, val userId: Long, val date: LocalDate
+    val guildId: Long,
+    val userId: Long,
+    val date: LocalDate
 ) {
     constructor(event: MessageReceivedEvent) : this(
         event.guild.idLong,

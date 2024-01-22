@@ -29,11 +29,11 @@ data class UserInVoiceRecord(
      * Время входа в голосовой канал
      */
     @Column(nullable = false)
-    val time: Long
+    val entryTime: Long
 ) {
     constructor(eventDto: VoiceEventDto) : this(
         guildId = eventDto.guildId,
         userId = eventDto.userId,
-        time = eventDto.time
+        entryTime = eventDto.time
     )
 }
