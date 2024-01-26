@@ -21,7 +21,7 @@ open class VoiceEventListener(
             return
         }
 
-        val eventTime = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.of("+03:00"))
+        val eventTime = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.of("+03:00")).toLocalDateTime()
         val eventDto = VoiceEventDto(event, eventTime)
         logger.info { "Получен ${event.javaClass.simpleName}: $eventDto" }
         service.incrementOrCreateCount(eventDto)

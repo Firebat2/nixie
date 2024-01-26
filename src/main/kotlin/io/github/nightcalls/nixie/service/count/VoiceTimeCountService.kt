@@ -10,6 +10,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,8 +26,8 @@ class VoiceTimeCountService(
     @Transactional
     fun incrementOrCreateCount(eventDto: VoiceEventDto) {
         if (eventDto.isLeaving) {
-            val voiceTimeInSeconds = calculateVoiceTime(eventDto) ?: return
-            recordVoiceTime(eventDto, voiceTimeInSeconds)
+            val entryTime = returnEntryTimeAndDeleteEntryRecord(eventDto) ?: return
+            recordVoiceTimeByDays(eventDto, entryTime)
             return
         }
         val result = usersInVoicesRepository.saveIfNotSameGuildJoining(UserInVoiceRecord(eventDto))
@@ -42,10 +45,11 @@ class VoiceTimeCountService(
             result
         }.map { createCountViewWithTimeFormat(it) }
 
-        event.reply(createTableOutput(messageViewsList)).queue()
+        createTableOutputsAndMultipleReplies(event, messageViewsList)
+        logger.info { "Отправлена статистика времени в войсе на сервер ${event.guild?.name}" }
     }
 
-    private fun calculateVoiceTime(eventDto: VoiceEventDto): Int? {
+    private fun returnEntryTimeAndDeleteEntryRecord(eventDto: VoiceEventDto): LocalDateTime? {
         val userInVoiceRecord = usersInVoicesRepository.findByGuildIdAndUserId(eventDto.guildId, eventDto.userId)
         if (userInVoiceRecord.isEmpty) {
             // если бот запустился, когда пользователь был в войсе, и пользователь вышел, когда бот был онлайн
@@ -53,9 +57,24 @@ class VoiceTimeCountService(
             logger.debug { "Для события \"Выход из голосового канала\" не найдены соответствующие данные о событии входа в голосовой канал, время данной сессии не будет учтено в статистике" }
             return null
         }
-        val voiceTimeInSeconds = eventDto.time.minus(userInVoiceRecord.get().entryTime).toInt()
+        val entryTime = userInVoiceRecord.get().entryTime
         usersInVoicesRepository.deleteById(userInVoiceRecord.get().id)
-        return voiceTimeInSeconds
+        return entryTime
+    }
+
+    private fun recordVoiceTimeByDays(eventDto: VoiceEventDto, entryTime: LocalDateTime) {
+        var voiceTimeInSeconds = Duration.between(entryTime, eventDto.time).seconds.toInt()
+        var secondsUntilMidnight =
+            Duration.between(entryTime, entryTime.toLocalDate().atTime(LocalTime.MAX)).seconds.toInt()
+        var syntheticEventDto = VoiceEventDto(eventDto, entryTime.toLocalDate())
+
+        while (voiceTimeInSeconds > secondsUntilMidnight) {
+            recordVoiceTime(syntheticEventDto, secondsUntilMidnight)
+            syntheticEventDto = VoiceEventDto(syntheticEventDto, syntheticEventDto.date.plusDays(1))
+            voiceTimeInSeconds -= secondsUntilMidnight
+            secondsUntilMidnight = 86400
+        }
+        recordVoiceTime(eventDto, voiceTimeInSeconds)
     }
 
     private fun recordVoiceTime(eventDto: VoiceEventDto, voiceTimeInSeconds: Int) {
