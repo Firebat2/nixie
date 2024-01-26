@@ -42,6 +42,7 @@ class MessageCountService(
             result
         }.map { createCountView(it) }
 
-        event.reply(createTableOutput(messageViewsList)).queue()
+        createTableOutputsAndMultipleReplies(event, messageViewsList)
+        logger.info { "Отправлена статистика сообщений на сервер ${event.guild?.name}" }
     }
 }

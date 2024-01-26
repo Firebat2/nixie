@@ -2,6 +2,7 @@ package io.github.nightcalls.nixie.repository.record
 
 import io.github.nightcalls.nixie.listeners.dto.VoiceEventDto
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -29,7 +30,7 @@ data class UserInVoiceRecord(
      * Время входа в голосовой канал
      */
     @Column(nullable = false)
-    val entryTime: Long
+    val entryTime: LocalDateTime
 ) {
     constructor(eventDto: VoiceEventDto) : this(
         guildId = eventDto.guildId,
