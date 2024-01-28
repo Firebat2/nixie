@@ -9,3 +9,6 @@ spring:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
 discord:
   token: ${DISCORD_TOKEN}
+logging:
+  level:
+    root: ${LOGGING_LEVEL}

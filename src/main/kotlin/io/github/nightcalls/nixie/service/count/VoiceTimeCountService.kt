@@ -39,12 +39,15 @@ class VoiceTimeCountService(
      */
     @Transactional
     fun showStats(event: SlashCommandInteractionEvent) {
+        event.deferReply(true).queue()
+
         val messageViewsList = event.guild!!.let {
             val result = voiceTimeRepository.sumTimeForGuildIdGroupByUserId(it.idLong)
             logger.debug { "При сборе статистики времени в войсе было сформировано ${result.size} записей" }
             result
         }.map { createCountViewWithTimeFormat(it) }
 
+        sendTitleEmbed(event, "Сформирована статистика по проведенному в голосовых каналах времени")
         createTableOutputsAndMultipleReplies(event, messageViewsList)
         logger.info { "Отправлена статистика времени в войсе на сервер ${event.guild?.name}" }
     }

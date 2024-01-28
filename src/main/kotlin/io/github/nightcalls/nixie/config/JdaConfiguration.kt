@@ -5,6 +5,8 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.utils.ChunkingFilter
+import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -37,7 +39,8 @@ class JdaConfiguration(
         return JDABuilder.create(
             token,
             GatewayIntent.GUILD_MESSAGES, // для сбора статистики сообщений
-            GatewayIntent.GUILD_VOICE_STATES // для сбора статистики входов и выходов из войсов
+            GatewayIntent.GUILD_VOICE_STATES, // для сбора статистики входов и выходов из войсов
+            GatewayIntent.GUILD_MEMBERS // для удаления участников из кэша, после того как они покинут гильдию
         )
             .disableCache(
                 CacheFlag.ACTIVITY,
@@ -47,6 +50,8 @@ class JdaConfiguration(
                 CacheFlag.ONLINE_STATUS,
                 CacheFlag.SCHEDULED_EVENTS
             )
+            .setMemberCachePolicy(MemberCachePolicy.ALL)
+            .setChunkingFilter(ChunkingFilter.ALL)
             .setActivity(Activity.listening("/nixie"))
     }
 }
