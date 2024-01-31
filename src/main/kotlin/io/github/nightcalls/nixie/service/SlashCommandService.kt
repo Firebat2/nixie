@@ -25,7 +25,7 @@ class SlashCommandService {
             "nixiethebat@gmail.com", "Адрес для обратной связи", false
         )
 
-        event.member?.asMention?.let { event.reply(it).addEmbeds(embedBuilder.build()).queue() }
+        event.member?.asMention?.let { event.reply(it).addEmbeds(embedBuilder.build()).setEphemeral(true).queue() }
         logger.info { "Отправлена инструкция по использованию бота на сервер ${event.guild?.name}" }
     }
 

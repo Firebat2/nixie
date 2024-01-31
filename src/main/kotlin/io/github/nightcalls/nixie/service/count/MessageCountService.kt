@@ -36,12 +36,15 @@ class MessageCountService(
      */
     @Transactional
     fun showStats(event: SlashCommandInteractionEvent) {
+        event.deferReply(true).queue()
+
         val messageViewsList = event.guild!!.let {
             val result = repository.sumCountsForGuildIdGroupByUserId(it.idLong)
             logger.debug { "При сборе статистики сообщений было сформировано ${result.size} записей" }
             result
         }.map { createCountView(it) }
 
+        sendTitleEmbed(event, "Сформирована статистика по количеству отправленных сообщений")
         createTableOutputsAndMultipleReplies(event, messageViewsList)
         logger.info { "Отправлена статистика сообщений на сервер ${event.guild?.name}" }
     }
