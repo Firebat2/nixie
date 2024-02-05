@@ -6,13 +6,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.2</version>
+        <version>3.3.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>io.github.nightcalls</groupId>
     <artifactId>nixie</artifactId>
-    <version>0.3</version>
+    <version>0.5</version>
     <name>Nixie</name>
     <description>Discord bot for collecting activity statistics</description>
 
@@ -49,11 +49,18 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk-jvm</artifactId>
+            <version>1.13.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -108,5 +115,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
