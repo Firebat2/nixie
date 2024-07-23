@@ -12,6 +12,6 @@ data class MessageEventDto(
     constructor(event: MessageReceivedEvent) : this(
         event.guild.idLong,
         event.author.idLong,
-        event.message.timeCreated.toCommonLocalDateTime().toLocalDate(),
+        event.message.timeCreated.toCommonLocalDateTime().toLocalDate()
     )
 }

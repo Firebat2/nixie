@@ -24,19 +24,19 @@ class MessageEventListenerCreatingService(
     private val listeners = ConcurrentHashMap<Long, MessageEventListener>()
 
     /**
-     * Создание MessageEventListener'ов при поднятии контекста приложения
+     * Создать и запустить MessageEventListener'ы при поднятии контекста приложения
      */
     @EventListener
     fun onContextRefreshedEvent(event: ContextRefreshedEvent) {
         val joinedGuilds = jda.guilds
-        logger.info { "Создаются MessageEventListener'ы для серверов в количестве ${joinedGuilds.size}..." }
+        logger.info { "Создаются MessageEventListener'ы..." }
         joinedGuilds.forEach { createListener(it) }
         jda.addEventListener(this)
         logger.info { "MessageEventListener'ы запущены" }
     }
 
     /**
-     * Отключение данного слушателя изменений контекста и MessageEventListener'ов при закрытии контекста приложения
+     * Отключить данного слушателя изменений контекста и MessageEventListener'ов при закрытии контекста приложения
      */
     @EventListener
     fun onContextClosedEvent(event: ContextClosedEvent) {
@@ -56,13 +56,12 @@ class MessageEventListenerCreatingService(
         }
     }
 
-    private fun createListener(guild: Guild): MessageEventListener {
+    private fun createListener(guild: Guild) {
         logger.debug { "Создаётся MessageEventListener для сервера ${guild.name}..." }
         val listener = MessageEventListener(guild, service)
         jda.addEventListener(listener)
         listeners[guild.idLong] = listener
         logger.debug { "MessageEventListener для сервера ${guild.name} запущен" }
-        return listener
     }
 
     private fun removeListener(guild: Guild): Boolean {

@@ -26,25 +26,25 @@ class VoiceEventListenerCreatingService(
     private val listeners = ConcurrentHashMap<Long, VoiceEventListener>()
 
     /**
-     * Создание VoiceEventListener'ов при поднятии контекста приложения
+     * Создать и запустить VoiceEventListener'ы при поднятии контекста приложения
      */
     @EventListener
     fun onContextRefreshedEvent(event: ContextRefreshedEvent) {
         val joinedGuilds = jda.guilds
-        logger.info { "Создаются VoiceEventListener'ы для серверов в количестве ${joinedGuilds.size}..." }
+        logger.info { "Создаются VoiceEventListener'ы..." }
         joinedGuilds.forEach { createListener(it) }
         jda.addEventListener(this)
         logger.info { "VoiceEventListener'ы запущены" }
     }
 
     /**
-     * Отключение данного слушателя изменений контекста и VoiceEventListener'ов при закрытии контекста приложения
+     * Отключить данного слушателя изменений контекста и VoiceEventListener'ов при закрытии контекста приложения
      */
     @EventListener
     fun onContextClosedEvent(event: ContextClosedEvent) {
         jda.removeEventListener(this)
         usersInVoicesRepository.deleteAll()
-        logger.info { "VoiceEventListener'ы отключены, данные о пользователях в войсах удалены" }
+        logger.info { "VoiceEventListener'ы отключены, данные о пользователях в голосовых каналах удалены" }
     }
 
     override fun onGuildJoin(event: GuildJoinEvent) {
@@ -56,17 +56,16 @@ class VoiceEventListenerCreatingService(
     override fun onGuildLeave(event: GuildLeaveEvent) {
         if (removeListener(event.guild)) {
             usersInVoicesRepository.deleteAllByGuildId(event.guild.idLong)
-            logger.info { "Бот покинул сервер ${event.guild.name}, VoiceEventListener успешно отключён, данные о пользователях в войсах этого сервера удалены" }
+            logger.info { "Бот покинул сервер ${event.guild.name}, VoiceEventListener успешно отключён, данные о пользователях в голосовых каналах этого сервера удалены" }
         }
     }
 
-    private fun createListener(guild: Guild): VoiceEventListener {
+    private fun createListener(guild: Guild) {
         logger.debug { "Создаётся VoiceEventListener для сервера ${guild.name}..." }
         val listener = VoiceEventListener(guild, service)
         jda.addEventListener(listener)
         listeners[guild.idLong] = listener
         logger.debug { "VoiceEventListener для сервера ${guild.name} запущен" }
-        return listener
     }
 
     private fun removeListener(guild: Guild): Boolean {

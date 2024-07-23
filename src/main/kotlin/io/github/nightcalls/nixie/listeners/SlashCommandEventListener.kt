@@ -1,5 +1,6 @@
 package io.github.nightcalls.nixie.listeners
 
+import io.github.nightcalls.nixie.listeners.dto.SlashCommandEventDto
 import io.github.nightcalls.nixie.service.SlashCommandService
 import io.github.nightcalls.nixie.service.count.MessageCountService
 import io.github.nightcalls.nixie.service.count.VoiceTimeCountService
@@ -26,23 +27,24 @@ class SlashCommandEventListener(
         if (event.guild != guild) {
             return
         }
-
-        logger.info { "Получен ${event.javaClass.simpleName}: ${event.name}" }
-        when (event.name) {
-            "nixie" -> slashCommandService.showInfo(event)
-            "stats-messages" -> checkCoolDown(event) { messageCountService.showStats(event) }
-            "stats-voices" -> checkCoolDown(event) { voiceTimeCountService.showStats(event) }
+        event.deferReply(true).queue()
+        val eventDto = SlashCommandEventDto(event)
+        logger.info { "Получен SlashCommandInteractionEvent: $eventDto" }
+        when (eventDto.command) {
+            "nixie" -> slashCommandService.showInfo(eventDto)
+            "stats-messages" -> checkCoolDown(eventDto) { messageCountService.showStats(eventDto) }
+            "stats-voices" -> checkCoolDown(eventDto) { voiceTimeCountService.showStats(eventDto) }
         }
     }
 
     private fun checkCoolDown(
-        event: SlashCommandInteractionEvent,
-        function: (event: SlashCommandInteractionEvent) -> Unit
+        eventDto: SlashCommandEventDto,
+        function: (eventDto: SlashCommandEventDto) -> Unit
     ) {
         if ((Clock.System.now() - lastCommandTime).inWholeSeconds < 10) {
-            return slashCommandService.coolDownReply(event)
+            return slashCommandService.coolDownReply(eventDto)
         }
         lastCommandTime = Clock.System.now()
-        return function(event)
+        return function(eventDto)
     }
 }
